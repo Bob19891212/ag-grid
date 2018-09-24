@@ -8,7 +8,8 @@ import {
     RowSpanningAccumulator,
     RowType,
     Utils,
-    _
+    _,
+    ExcelOOXMLDataType
 } from 'ag-grid-community';
 
 import {
@@ -33,21 +34,21 @@ export interface ExcelGridSerializingParams extends GridSerializingParams {
 }
 
 export class ExcelXmlSerializingSession extends BaseGridSerializingSession<ExcelCell[][]> {
-    private stylesByIds: any;
-    private mixedStyles: { [key: string]: ExcelMixedStyle } = {};
-    private mixedStyleCounter: number = 0;
-    private excelStyles: ExcelStyle[];
-    private customHeader: ExcelCell[][];
-    private customFooter: ExcelCell[][];
-    private sheetName:string;
-    private suppressTextAsCDATA:boolean;
+    protected stylesByIds: any;
+    protected mixedStyles: { [key: string]: ExcelMixedStyle } = {};
+    protected mixedStyleCounter: number = 0;
+    protected excelStyles: ExcelStyle[];
+    protected customHeader: ExcelCell[][];
+    protected customFooter: ExcelCell[][];
+    protected sheetName:string;
+    protected suppressTextAsCDATA:boolean;
 
-    private rows: ExcelRow[] = [];
-    private cols: ExcelColumn[];
+    protected rows: ExcelRow[] = [];
+    protected cols: ExcelColumn[];
 
-    private excelFactory: ExcelXmlFactory;
+    protected excelFactory: ExcelXmlFactory | ExcelXlsxFactory;
     baseExcelStyles: ExcelStyle[];
-    private styleLinker: (rowType: RowType, rowIndex: number, colIndex: number, value: string, column: Column, node: RowNode) => string[];
+    protected styleLinker: (rowType: RowType, rowIndex: number, colIndex: number, value: string, column: Column, node: RowNode) => string[];
 
     constructor(config: ExcelGridSerializingParams) {
         super({
@@ -62,7 +63,7 @@ export class ExcelXmlSerializingSession extends BaseGridSerializingSession<Excel
         const {sheetName, excelFactory, baseExcelStyles, styleLinker, suppressTextAsCDATA} = config;
 
         this.sheetName = sheetName;
-        this.excelFactory = <ExcelXmlFactory>excelFactory;
+        this.excelFactory = excelFactory;
         this.baseExcelStyles = baseExcelStyles;
         this.styleLinker = styleLinker;
         this.suppressTextAsCDATA = suppressTextAsCDATA;
@@ -160,7 +161,7 @@ export class ExcelXmlSerializingSession extends BaseGridSerializingSession<Excel
             }
         }];
 
-        return this.excelFactory.createExcel(this.excelStyles, data);
+        return this.excelFactory.createExcel(this.excelStyles, data, []);
     }
 
     onNewBodyColumn(rowIndex: number, currentCells: ExcelCell[]): (column: Column, index: number, node?: RowNode) => void {
@@ -214,7 +215,7 @@ export class ExcelXmlSerializingSession extends BaseGridSerializingSession<Excel
         return this.stylesByIds[styleId];
     }
 
-    private createCell(styleId: string, type: ExcelDataType, value: string): ExcelCell {
+    protected createCell(styleId: string, type: ExcelDataType | ExcelOOXMLDataType, value: string): ExcelCell {
         let actualStyle: ExcelStyle = this.stylesByIds[styleId];
         let styleExists: boolean = actualStyle != null;
 
@@ -237,7 +238,7 @@ export class ExcelXmlSerializingSession extends BaseGridSerializingSession<Excel
                     console.warn(`ag-grid: Unrecognized data type for excel export [${actualStyle.id}.dataType=${actualStyle.dataType}]`);
             }
 
-            return type;
+            return type as ExcelDataType;
         }
 
         let typeTransformed: ExcelDataType = getType();
@@ -256,7 +257,7 @@ export class ExcelXmlSerializingSession extends BaseGridSerializingSession<Excel
         };
     }
 
-    private createMergedCell(styleId: string, type: ExcelDataType, value: string, numOfCells: number): ExcelCell {
+    protected createMergedCell(styleId: string, type: ExcelDataType | ExcelOOXMLDataType, value: string, numOfCells: number): ExcelCell {
         return {
             styleId: this.styleExists(styleId) ? styleId : null,
             data: {

@@ -1,7 +1,7 @@
 import {ExcelOOXMLTemplate, _} from 'ag-grid-community';
-import contentType from './contentType';
+import contentTypeFactory from './contentType';
 
-const contentTypes: ExcelOOXMLTemplate = {
+const contentTypesFactory: ExcelOOXMLTemplate = {
     getTemplate() {
 
         const children = _.map([{
@@ -36,7 +36,7 @@ const contentTypes: ExcelOOXMLTemplate = {
             name: 'Override',
             ContentType: 'application/vnd.openxmlformats-package.core-properties+xml',
             PartName: '/docProps/core.xml'
-        }], contentType.getTemplate);
+        }], contentTypeFactory.getTemplate);
 
         return {
             name: "Types",
@@ -50,4 +50,4 @@ const contentTypes: ExcelOOXMLTemplate = {
     }
 };
 
-export default contentTypes;
+export default contentTypesFactory;

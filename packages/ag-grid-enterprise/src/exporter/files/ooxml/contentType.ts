@@ -1,6 +1,6 @@
 import {ExcelContentType, ExcelOOXMLTemplate} from 'ag-grid-community';
 
-const contentType: ExcelOOXMLTemplate = {
+const contentTypeFactory: ExcelOOXMLTemplate = {
     getTemplate(config: ExcelContentType) {
         const {name, ContentType, Extension, PartName} = config;
 
@@ -8,13 +8,13 @@ const contentType: ExcelOOXMLTemplate = {
             name,
             properties: {
                 rawMap: {
-                    ContentType,
                     Extension,
-                    PartName
+                    PartName,
+                    ContentType
                 }
             }
         };
     }
 };
 
-export default contentType;
+export default contentTypeFactory;

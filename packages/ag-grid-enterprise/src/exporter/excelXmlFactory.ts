@@ -23,7 +23,7 @@ export class ExcelXmlFactory {
 
     @Autowired('xmlFactory') private xmlFactory: XmlFactory;
 
-    public createExcel(styles: ExcelStyle[], worksheets: ExcelWorksheet[]): string {
+    public createExcel(styles: ExcelStyle[], worksheets: ExcelWorksheet[], sharedStrings: string[]): string {
         const header = this.excelXmlHeader();
         const docProps = documentProperties.getTemplate();
         const eWorkbook = excelWorkbook.getTemplate();

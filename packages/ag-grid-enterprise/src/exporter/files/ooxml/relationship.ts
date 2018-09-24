@@ -1,6 +1,6 @@
 import {ExcelOOXMLTemplate, ExcelRelationship} from 'ag-grid-community';
 
-const relationship: ExcelOOXMLTemplate = {
+const relationshipFactory: ExcelOOXMLTemplate = {
     getTemplate(config: ExcelRelationship) {
         const {Id, Type, Target} = config;
         return {
@@ -16,4 +16,4 @@ const relationship: ExcelOOXMLTemplate = {
     }
 };
 
-export default relationship;
+export default relationshipFactory;

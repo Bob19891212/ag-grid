@@ -1,12 +1,11 @@
 import {ExcelOOXMLTemplate} from 'ag-grid-community';
 
-const sheet: ExcelOOXMLTemplate = {
+const sheetFactory: ExcelOOXMLTemplate = {
     getTemplate() {
         return {
             name: "sheet",
             properties: {
                 rawMap: {
-                    "state": "visible",
                     "name": "Sheet1",
                     "sheetId": "1",
                     "r:id": "rId1"
@@ -16,4 +15,4 @@ const sheet: ExcelOOXMLTemplate = {
     }
 };
 
-export default sheet;
+export default sheetFactory;

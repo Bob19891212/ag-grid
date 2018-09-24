@@ -165,6 +165,7 @@ export class ExcelCreator extends BaseCreator<ExcelCell[][], SerializingSession,
             xl.file('_rels/workbook.xml.rels', xlsxFactory.workbookRels());
             xl.file('theme/theme1.xml', xlsxFactory.theme());
             xl.file('worksheets/sheet1.xml', data);
+            xl.file('sharedStrings.xml', xlsxFactory.getSharedStrings());
             xl.file('workbook.xml', xlsxFactory.workbook());
 
             let zipped;

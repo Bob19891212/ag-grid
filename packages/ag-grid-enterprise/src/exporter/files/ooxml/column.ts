@@ -2,25 +2,26 @@ import {ExcelOOXMLTemplate, ExcelColumn} from 'ag-grid-community';
 
 const getExcelCellWidth = (width: number): number => Math.max(Math.ceil((width - 12) / 7 + 1), 10);
 
-const column: ExcelOOXMLTemplate = {
+const columnFactory: ExcelOOXMLTemplate = {
     getTemplate(config: ExcelColumn) {
-        const {min, max, s, width, hidden, bestFit} = config;
+        const {min, max, s, width = 10, hidden, bestFit} = config;
+        const excelWidth = getExcelCellWidth(width);
 
         return {
             name: 'col',
             properties: {
                 rawMap: {
-                    min,
-                    max,
-                    width: !width ? 10 : getExcelCellWidth(width),
+                    min: min || 1,
+                    max: max || 1,
+                    width: excelWidth,
                     style: s,
                     hidden: hidden ? '1' : '0',
                     bestFit: bestFit ? '1' : '0',
-                    customWidth: width !== 10 ? '1' : '0'
+                    customWidth: excelWidth != 10 ? '1' : '0'
                 }
             }
         };
     }
 };
 
-export default column;
+export default columnFactory;

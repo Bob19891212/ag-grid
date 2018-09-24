@@ -1,6 +1,6 @@
 import {ExcelOOXMLTemplate} from 'ag-grid-community';
 
-const core: ExcelOOXMLTemplate = {
+const coreFactory: ExcelOOXMLTemplate = {
     getTemplate() {
         const dt = new Date(),
             jsonDate = dt.toJSON();
@@ -45,4 +45,4 @@ const core: ExcelOOXMLTemplate = {
     }
 };
 
-export default core;
+export default coreFactory;

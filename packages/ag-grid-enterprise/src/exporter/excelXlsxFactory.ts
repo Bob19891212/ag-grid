@@ -1,11 +1,12 @@
 import {Autowired, Bean, XmlFactory, XmlElement} from 'ag-grid-community';
 
-import core from './files/ooxml/core';
-import contentTypes from './files/ooxml/contentTypes';
-import officeTheme from './files/ooxml/themes/office';
-import workbook from './files/ooxml/workbook';
-import worksheet from './files/ooxml/worksheet';
-import relationships from './files/ooxml/relationships';
+import coreFactory from './files/ooxml/core';
+import contentTypesFactory from './files/ooxml/contentTypes';
+import officeThemeFactory from './files/ooxml/themes/office';
+import sharedStringsFactory from './files/ooxml/sharedStrings';
+import workbookFactory from './files/ooxml/workbook';
+import worksheetFactory from './files/ooxml/worksheet';
+import relationshipsFactory from './files/ooxml/relationships';
 
 import {ExcelStyle, ExcelWorksheet} from 'ag-grid-community';
 
@@ -17,6 +18,12 @@ export class ExcelXlsxFactory {
 
     @Autowired('xmlFactory') private xmlFactory: XmlFactory;
 
+    private sharedStrings: string[] = [];
+
+    public getSharedStrings(): string {
+        return this.createXmlPart(sharedStringsFactory.getTemplate(this.sharedStrings));
+    }
+
     private createXmlPart(body: XmlElement): string {
         const header = this.xmlFactory.createHeader({
             encoding: 'UTF-8',
@@ -27,20 +34,22 @@ export class ExcelXlsxFactory {
         return `${header}${xmlBody}`;
     }
 
-    public createExcel(styles: ExcelStyle[], worksheets: ExcelWorksheet[]): string {
+    public createExcel(styles: ExcelStyle[], worksheets: ExcelWorksheet[], sharedStrings?: string[]): string {
+        this.sharedStrings = sharedStrings;
+
         return this.worksheet(worksheets);
     }
 
     public core(): string {
-        return this.createXmlPart(core.getTemplate());
+        return this.createXmlPart(coreFactory.getTemplate());
     }
 
     public contentTypes(): string {
-        return this.createXmlPart(contentTypes.getTemplate());
+        return this.createXmlPart(contentTypesFactory.getTemplate());
     }
 
     public rels(): string {
-        const rs = relationships.getTemplate([{
+        const rs = relationshipsFactory.getTemplate([{
             Id: 'rId1',
             Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument',
             Target: 'xl/workbook.xml'
@@ -54,15 +63,15 @@ export class ExcelXlsxFactory {
     }
 
     public theme(): string {
-        return this.createXmlPart(officeTheme.getTemplate());
+        return this.createXmlPart(officeThemeFactory.getTemplate());
     }
 
     public workbook(): string {
-        return this.createXmlPart(workbook.getTemplate());
+        return this.createXmlPart(workbookFactory.getTemplate());
     }
 
     public workbookRels(): string {
-        const rs = relationships.getTemplate([{
+        const rs = relationshipsFactory.getTemplate([{
             Id: 'rId1',
             Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
             Target: 'worksheets/sheet1.xml'
@@ -84,6 +93,6 @@ export class ExcelXlsxFactory {
     }
 
     public worksheet(worksheets: ExcelWorksheet[]): string {
-        return this.createXmlPart(worksheet.getTemplate(worksheets[0]));
+        return this.createXmlPart(worksheetFactory.getTemplate(worksheets[0]));
     }
 }

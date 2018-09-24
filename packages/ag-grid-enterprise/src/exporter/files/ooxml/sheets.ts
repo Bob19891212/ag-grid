@@ -1,13 +1,13 @@
 import {ExcelOOXMLTemplate} from 'ag-grid-community';
-import sheet from './sheet';
+import sheetFactory from './sheet';
 
-const sheets: ExcelOOXMLTemplate = {
+const sheetsFactory: ExcelOOXMLTemplate = {
     getTemplate() {
         return {
             name: "sheets",
-            children: [sheet.getTemplate()]
+            children: [sheetFactory.getTemplate()]
         };
     }
 };
 
-export default sheets;
+export default sheetsFactory;

@@ -1,6 +1,6 @@
 import {ExcelOOXMLTemplate, ExcelWorksheet, ExcelRow, ExcelCell, _} from 'ag-grid-community';
-import column from './column';
-import row from './row';
+import columnFactory from './column';
+import rowFactory from './row';
 import mergeCell from './mergeCell';
 
 const getMergedCells = (rows: ExcelRow[]): string[] => {
@@ -9,6 +9,8 @@ const getMergedCells = (rows: ExcelRow[]): string[] => {
     rows.forEach((currentRow, rowIdx) => {
         const cells = currentRow.cells;
         let merges = 0;
+        currentRow.index = rowIdx + 1;
+
         cells.forEach((currentCell, cellIdx) => {
             const start = getExcelColumnName(cellIdx + merges + 1);
             const outputRow = rowIdx + 1;
@@ -42,7 +44,7 @@ const getExcelColumnName = (colIdx: number): string => {
     return getExcelColumnName(pos) + fromCharCode(startCode + tableIdx - 1);
 };
 
-const worksheet: ExcelOOXMLTemplate = {
+const worksheetFactory: ExcelOOXMLTemplate = {
     getTemplate(config: ExcelWorksheet) {
         const {table} = config;
         const {rows, columns} = table;
@@ -52,12 +54,12 @@ const worksheet: ExcelOOXMLTemplate = {
         const children = [].concat(
             columns.length ? {
                 name: 'cols',
-                children: _.map(columns, column.getTemplate)
+                children: _.map(columns, columnFactory.getTemplate)
             } : []
         ).concat(
             rows.length ? {
                 name: 'sheetData',
-                children: _.map(rows, row.getTemplate)
+                children: _.map(rows, rowFactory.getTemplate)
             } : []
         ).concat(
             mergedCells.length ? {
@@ -89,4 +91,4 @@ const worksheet: ExcelOOXMLTemplate = {
     }
 };
 
-export default worksheet;
+export default worksheetFactory;

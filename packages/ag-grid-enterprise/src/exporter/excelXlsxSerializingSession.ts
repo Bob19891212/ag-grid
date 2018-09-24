@@ -1,14 +1,11 @@
 import {
-    BaseGridSerializingSession,
     Column,
     Constants,
     ExcelCell,
-    ExcelColumn,
     ExcelOOXMLDataType,
     ExcelRow,
     ExcelStyle,
     ExcelWorksheet,
-    RowAccumulator,
     RowNode,
     RowSpanningAccumulator,
     RowType,
@@ -16,74 +13,11 @@ import {
     _
 } from 'ag-grid-community';
 
-import {ExcelMixedStyle} from './excelCreator';
-import {ExcelGridSerializingParams} from './excelXmlSerializingSession';
-import {ExcelXlsxFactory} from './excelXlsxFactory';
+import { ExcelXmlSerializingSession} from './excelXmlSerializingSession';
 
-export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<ExcelCell[][]> {
-    private stylesByIds: any;
-    private mixedStyles: { [key: string]: ExcelMixedStyle } = {};
-    private mixedStyleCounter: number = 0;
-    private excelStyles: ExcelStyle[];
-    private customHeader: ExcelCell[][];
-    private customFooter: ExcelCell[][];
-    private sheetName:string;
-    private suppressTextAsCDATA:boolean;
+export class ExcelXlsxSerializingSession extends ExcelXmlSerializingSession {
 
-    private rows: ExcelRow[] = [];
-    private cols: ExcelColumn[];
-
-    private excelFactory: ExcelXlsxFactory;
-    baseExcelStyles: ExcelStyle[];
-    private styleLinker: (rowType: RowType, rowIndex: number, colIndex: number, value: string, column: Column, node: RowNode) => string[];
-
-    constructor(config: ExcelGridSerializingParams) {
-        super({
-            columnController: config.columnController,
-            valueService: config.valueService,
-            gridOptionsWrapper: config.gridOptionsWrapper,
-            processCellCallback: config.processCellCallback,
-            processHeaderCallback: config.processHeaderCallback,
-            cellAndHeaderEscaper: (raw: string) => raw
-        });
-
-        const {sheetName, excelFactory, baseExcelStyles, styleLinker, suppressTextAsCDATA} = config;
-
-        this.sheetName = sheetName;
-        this.excelFactory = excelFactory as ExcelXlsxFactory;
-        this.baseExcelStyles = baseExcelStyles;
-        this.styleLinker = styleLinker;
-        this.suppressTextAsCDATA = suppressTextAsCDATA;
-        this.stylesByIds = {};
-
-        if (!baseExcelStyles) {
-            this.excelStyles = [];
-        } else {
-            baseExcelStyles.forEach((it: ExcelStyle) => {
-                this.stylesByIds[it.id] = it;
-            });
-            this.excelStyles = baseExcelStyles.slice();
-        }
-        this.sheetName = sheetName;
-        this.suppressTextAsCDATA = suppressTextAsCDATA;
-    }
-
-    public addCustomHeader(customHeader: ExcelCell[][]): void {
-        this.customHeader = customHeader;
-    }
-
-    public addCustomFooter(customFooter: ExcelCell[][]): void {
-        this.customFooter = customFooter;
-    }
-
-    public prepare(columnsToExport: Column[]): void {
-        this.cols = Utils.map(columnsToExport, (it: Column) => {
-            it.getColDef().cellStyle;
-            return {
-                width: it.getActualWidth()
-            };
-        });
-    }
+    private stringList: string[] = [];
 
     public onNewHeaderGroupingRow(): RowSpanningAccumulator {
         let currentCells: ExcelCell[] = [];
@@ -94,26 +28,8 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
         return {
             onColumn: (header: string, index: number, span: number) => {
                 let styleIds: string[] = that.styleLinker(RowType.HEADER_GROUPING, 1, index, "grouping-" + header, null, null);
-                currentCells.push(that.createMergedCell(styleIds.length > 0 ? styleIds[0] : null, "inlineStr", header, span));
+                currentCells.push(that.createMergedCell(styleIds.length > 0 ? styleIds[0] : null, 's', header, span));
             }
-        };
-    }
-
-    public onNewHeaderRow(): RowAccumulator {
-        return this.onNewRow(this.onNewHeaderColumn);
-    }
-
-    public onNewBodyRow(): RowAccumulator {
-        return this.onNewRow(this.onNewBodyColumn);
-    }
-
-    onNewRow(onNewColumnAccumulator: (rowIndex: number, currentCells: ExcelCell[]) => (column: Column, index: number, node?: RowNode) => void): RowAccumulator {
-        let currentCells: ExcelCell[] = [];
-        this.rows.push({
-            cells: currentCells
-        });
-        return {
-            onColumn: onNewColumnAccumulator.bind(this, this.rows.length, currentCells)()
         };
     }
 
@@ -122,7 +38,7 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
         return (column: Column, index: number, node?: RowNode) => {
             let nameForCol = this.extractHeaderValue(column);
             let styleIds: string[] = that.styleLinker(RowType.HEADER, rowIndex, index, nameForCol, column, null);
-            currentCells.push(this.createCell(styleIds.length > 0 ? styleIds[0] : null, 'inlineStr', nameForCol));
+            currentCells.push(this.createCell(styleIds.length > 0 ? styleIds[0] : null, 's', nameForCol));
         };
     }
 
@@ -147,7 +63,7 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
             }
         }];
 
-        return this.excelFactory.createExcel(this.excelStyles, data);
+        return this.excelFactory.createExcel(this.excelStyles, data, this.stringList);
     }
 
     onNewBodyColumn(rowIndex: number, currentCells: ExcelCell[]): (column: Column, index: number, node?: RowNode) => void {
@@ -165,43 +81,12 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
                 }
                 excelStyleId = this.mixedStyles[key].excelID;
             }
-            let type: ExcelOOXMLDataType = Utils.isNumeric(valueForCell) ? 'n' : 'inlineStr';
+            let type: ExcelOOXMLDataType = Utils.isNumeric(valueForCell) ? 'n' : 's';
             currentCells.push(that.createCell(excelStyleId, type, valueForCell));
         };
     }
 
-    addNewMixedStyle(styleIds: string[]): void {
-        this.mixedStyleCounter += 1;
-        let excelId = 'mixedStyle' + this.mixedStyleCounter;
-        let resultantStyle: ExcelStyle = {};
-
-        styleIds.forEach((styleId: string) => {
-            this.excelStyles.forEach((excelStyle: ExcelStyle) => {
-                if (excelStyle.id === styleId) {
-                    Utils.mergeDeep(resultantStyle, excelStyle);
-                }
-            });
-        });
-
-        resultantStyle['id'] = excelId;
-        resultantStyle['name'] = excelId;
-        let key: string = styleIds.join("-");
-        this.mixedStyles[key] = {
-            excelID: excelId,
-            key: key,
-            result: resultantStyle
-        };
-        this.excelStyles.push(resultantStyle);
-        this.stylesByIds[excelId] = resultantStyle;
-    }
-
-    private styleExists(styleId: string): boolean {
-        if (styleId == null) return false;
-
-        return this.stylesByIds[styleId];
-    }
-
-    private createCell(styleId: string, type: ExcelOOXMLDataType, value: string): ExcelCell {
+    protected createCell(styleId: string, type: ExcelOOXMLDataType, value: string): ExcelCell {
         let actualStyle: ExcelStyle = this.stylesByIds[styleId];
         let styleExists: boolean = actualStyle != null;
 
@@ -211,7 +96,7 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
                 actualStyle.dataType
             ) switch (actualStyle.dataType) {
                 case 'string':
-                    return 'inlineStr';
+                    return 's';
                 case 'number':
                     return 'n';
                 case 'dateTime':
@@ -229,28 +114,26 @@ export class ExcelXlsxSerializingSession extends BaseGridSerializingSession<Exce
 
         let typeTransformed: ExcelOOXMLDataType = getType();
 
-        let massageText = (val:string) =>  this.suppressTextAsCDATA ? _.escape(val) : `<![CDATA[${val}]]>`;
+        const getStringPosition = (val: string): number => {
+            const pos = this.stringList.indexOf(val);
+
+            if (pos < 0) {
+                this.stringList.push(val);
+                return this.stringList.length - 1;
+            }
+
+            return pos;
+        };
 
         return {
             styleId: styleExists ? styleId : null,
             data: {
                 type: typeTransformed,
                 value:
-                    typeTransformed === 'inlineStr' ? massageText(value):
-                    typeTransformed === 'n' ? Number(value).valueOf() + '' :
+                    typeTransformed === 's' ? getStringPosition(value).toString():
+                    typeTransformed === 'n' ? Number(value).toString():
                     value
             }
-        };
-    }
-
-    private createMergedCell(styleId: string, type: ExcelOOXMLDataType, value: string, numOfCells: number): ExcelCell {
-        return {
-            styleId: this.styleExists(styleId) ? styleId : null,
-            data: {
-                type: type,
-                value: value
-            },
-            mergeAcross: numOfCells
         };
     }
 }

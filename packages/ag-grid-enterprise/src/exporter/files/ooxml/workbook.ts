@@ -1,7 +1,7 @@
 import {ExcelOOXMLTemplate} from 'ag-grid-community';
-import sheets from './sheets';
+import sheetsFactory from './sheets';
 
-const workbook: ExcelOOXMLTemplate = {
+const workbookFactory: ExcelOOXMLTemplate = {
     getTemplate() {
 
         return {
@@ -17,9 +17,9 @@ const workbook: ExcelOOXMLTemplate = {
                     xmlns: "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
                 }
             },
-            children: [sheets.getTemplate()]
+            children: [sheetsFactory.getTemplate()]
         };
     }
 };
 
-export default workbook;
+export default workbookFactory;

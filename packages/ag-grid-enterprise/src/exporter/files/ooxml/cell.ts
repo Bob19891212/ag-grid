@@ -1,6 +1,6 @@
 import {ExcelOOXMLTemplate, ExcelCell, _} from 'ag-grid-community';
 
-const cell: ExcelOOXMLTemplate = {
+const cellFactory: ExcelOOXMLTemplate = {
     getTemplate(config: ExcelCell) {
         const {ref, data, styleId} = config;
         const {type, value} = data;
@@ -36,4 +36,4 @@ const cell: ExcelOOXMLTemplate = {
     }
 };
 
-export default cell;
+export default cellFactory;

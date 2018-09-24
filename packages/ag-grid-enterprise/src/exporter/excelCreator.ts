@@ -156,17 +156,18 @@ export class ExcelCreator extends BaseCreator<ExcelCell[][], SerializingSession,
         const xlsxFactory = this.xlsxFactory;
 
         return zip.sync(() => {
-            zip.file('_rels/.rels', xlsxFactory.rels());
-            zip.file('docProps/core.xml', xlsxFactory.core());
-            zip.file('[Content_Types].xml', xlsxFactory.contentTypes());
+            zip.file('_rels/.rels', xlsxFactory.createRels());
+            zip.file('docProps/core.xml', xlsxFactory.createCore());
+            zip.file('[Content_Types].xml', xlsxFactory.createContentTypes());
 
             const xl = zip.folder('xl');
 
-            xl.file('_rels/workbook.xml.rels', xlsxFactory.workbookRels());
-            xl.file('theme/theme1.xml', xlsxFactory.theme());
+            xl.file('_rels/workbook.xml.rels', xlsxFactory.createWorkbookRels());
+            xl.file('theme/theme1.xml', xlsxFactory.createTheme());
             xl.file('worksheets/sheet1.xml', data);
-            xl.file('sharedStrings.xml', xlsxFactory.getSharedStrings());
-            xl.file('workbook.xml', xlsxFactory.workbook());
+            xl.file('sharedStrings.xml', xlsxFactory.createSharedStrings());
+            xl.file('styles.xml', xlsxFactory.createStylesheet());
+            xl.file('workbook.xml', xlsxFactory.createWorkbook());
 
             let zipped;
 

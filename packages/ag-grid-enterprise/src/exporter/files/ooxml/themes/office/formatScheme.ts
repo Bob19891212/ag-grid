@@ -33,7 +33,7 @@ const getGs = (props: GsType): XmlElement => {
             name: 'a:schemeClr',
             properties: {
                 rawMap: {
-                    schemeClr: schemeColor
+                    val: schemeColor
                 }
             },
             children
@@ -172,8 +172,8 @@ const getBgFillStyleList = (): XmlElement => ({
         getGradFill([
             '1',
             ['0', 'phClr', '150000', '102000', '93000', '98000'],
-            ['50000', 'phClr', '103000', '130000', '98000', '90000'],
-            ['100000', 'phClr', undefined, '120000', undefined, '63000'],
+            ['50000', 'phClr', '130000', '103000', '98000', '90000'],
+            ['100000', 'phClr', '120000', undefined, undefined, '63000'],
             ['5400000', '0']
         ])
     ]

@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
     httpRequest.onreadystatechange = function() {
         if (httpRequest.readyState === 4 && httpRequest.status === 200) {
             var httpResult = JSON.parse(httpRequest.responseText);
-            gridOptions.api.setRowData(httpResult);
+            gridOptions.api.setRowData(httpResult.slice(0, 5));
         }
     };
 });

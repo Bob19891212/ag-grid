@@ -11,8 +11,8 @@ const columnFactory: ExcelOOXMLTemplate = {
             name: 'col',
             properties: {
                 rawMap: {
-                    min: min || 1,
-                    max: max || 1,
+                    min: min,
+                    max: max,
                     width: excelWidth,
                     style: s,
                     hidden: hidden ? '1' : '0',

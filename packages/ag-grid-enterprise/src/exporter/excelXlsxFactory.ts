@@ -4,6 +4,7 @@ import coreFactory from './files/ooxml/core';
 import contentTypesFactory from './files/ooxml/contentTypes';
 import officeThemeFactory from './files/ooxml/themes/office';
 import sharedStringsFactory from './files/ooxml/sharedStrings';
+import stylesheetFactory from './files/ooxml/styles/stylesheet';
 import workbookFactory from './files/ooxml/workbook';
 import worksheetFactory from './files/ooxml/worksheet';
 import relationshipsFactory from './files/ooxml/relationships';
@@ -19,8 +20,9 @@ export class ExcelXlsxFactory {
     @Autowired('xmlFactory') private xmlFactory: XmlFactory;
 
     private sharedStrings: string[] = [];
+    private excelStyles: ExcelStyle[] = [];
 
-    public getSharedStrings(): string {
+    public createSharedStrings(): string {
         return this.createXmlPart(sharedStringsFactory.getTemplate(this.sharedStrings));
     }
 
@@ -36,19 +38,20 @@ export class ExcelXlsxFactory {
 
     public createExcel(styles: ExcelStyle[], worksheets: ExcelWorksheet[], sharedStrings?: string[]): string {
         this.sharedStrings = sharedStrings;
+        this.excelStyles = styles;
 
-        return this.worksheet(worksheets);
+        return this.createWorksheet(worksheets);
     }
 
-    public core(): string {
+    public createCore(): string {
         return this.createXmlPart(coreFactory.getTemplate());
     }
 
-    public contentTypes(): string {
+    public createContentTypes(): string {
         return this.createXmlPart(contentTypesFactory.getTemplate());
     }
 
-    public rels(): string {
+    public createRels(): string {
         const rs = relationshipsFactory.getTemplate([{
             Id: 'rId1',
             Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument',
@@ -62,15 +65,19 @@ export class ExcelXlsxFactory {
         return this.createXmlPart(rs);
     }
 
-    public theme(): string {
+    public createStylesheet(): string {
+        return this.createXmlPart(stylesheetFactory.getTemplate());
+    }
+
+    public createTheme(): string {
         return this.createXmlPart(officeThemeFactory.getTemplate());
     }
 
-    public workbook(): string {
+    public createWorkbook(): string {
         return this.createXmlPart(workbookFactory.getTemplate());
     }
 
-    public workbookRels(): string {
+    public createWorkbookRels(): string {
         const rs = relationshipsFactory.getTemplate([{
             Id: 'rId1',
             Type: 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet',
@@ -92,7 +99,7 @@ export class ExcelXlsxFactory {
         return this.createXmlPart(rs);
     }
 
-    public worksheet(worksheets: ExcelWorksheet[]): string {
+    public createWorksheet(worksheets: ExcelWorksheet[]): string {
         return this.createXmlPart(worksheetFactory.getTemplate(worksheets[0]));
     }
 }

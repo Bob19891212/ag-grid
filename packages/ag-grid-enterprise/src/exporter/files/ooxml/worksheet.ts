@@ -1,9 +1,14 @@
-import {ExcelOOXMLTemplate, ExcelWorksheet, ExcelRow, ExcelCell, _} from 'ag-grid-community';
+import {ExcelOOXMLTemplate, ExcelWorksheet, ExcelRow, ExcelCell, _, ExcelColumn} from 'ag-grid-community';
 import columnFactory from './column';
 import rowFactory from './row';
 import mergeCell from './mergeCell';
 
-const getMergedCells = (rows: ExcelRow[]): string[] => {
+const updateColMinMax = (col: ExcelColumn, min: number, max: number): void => {
+    col.min = Math.max(col.min || 1, min);
+    col.max = Math.max(col.max || 1, max);
+};
+
+const getMergedCells = (rows: ExcelRow[], cols: ExcelColumn[]): string[] => {
     const mergedCells: string[] = [];
 
     rows.forEach((currentRow, rowIdx) => {
@@ -12,7 +17,8 @@ const getMergedCells = (rows: ExcelRow[]): string[] => {
         currentRow.index = rowIdx + 1;
 
         cells.forEach((currentCell, cellIdx) => {
-            const start = getExcelColumnName(cellIdx + merges + 1);
+            const min = cellIdx + merges + 1;
+            const start = getExcelColumnName(min);
             const outputRow = rowIdx + 1;
 
             if (currentCell.mergeAcross) {
@@ -21,6 +27,9 @@ const getMergedCells = (rows: ExcelRow[]): string[] => {
 
                 mergedCells.push(`${start}${outputRow}:${end}${outputRow}`);
             }
+            const max = cellIdx + merges + 1;
+
+            updateColMinMax(cols[min - 1], min, max);
 
             currentCell.ref = `${start}${outputRow}`;
         });
@@ -49,7 +58,7 @@ const worksheetFactory: ExcelOOXMLTemplate = {
         const {table} = config;
         const {rows, columns} = table;
 
-        const mergedCells = getMergedCells(rows);
+        const mergedCells = getMergedCells(rows, columns);
 
         const children = [].concat(
             columns.length ? {

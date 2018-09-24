@@ -14,7 +14,7 @@ const sharedStrings: ExcelOOXMLTemplate = {
             name: "sst",
             properties: {
                 rawMap: {
-                    xlmns: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
+                    xmlns: 'http://schemas.openxmlformats.org/spreadsheetml/2006/main',
                     count: strings.length,
                     uniqueCount: strings.length
                 }
